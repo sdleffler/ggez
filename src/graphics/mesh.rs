@@ -58,12 +58,14 @@ pub use self::t::{FillOptions, FillRule, LineCap, LineJoin, StrokeOptions};
 #[derive(Debug, Clone)]
 pub struct MeshBuilder {
     buffer: t::geometry_builder::VertexBuffers<Vertex, u16>,
+    image: Option<Image>,
 }
 
 impl Default for MeshBuilder {
     fn default() -> Self {
         Self {
             buffer: t::VertexBuffers::new(),
+            image: None,
         }
     }
 }
@@ -371,6 +373,12 @@ impl MeshBuilder {
         self
     }
 
+    /// Add a texture for the `Mesh` to be drawn with.
+    pub fn with_texture(&mut self, image: Image) -> &mut Self {
+        self.image = Some(image);
+        self
+    }
+
     /// TODO: Update docs.
     /// Creates a `Mesh` from a raw list of triangles defined from points
     /// and indices, with the given UV texture coordinates.
@@ -406,6 +414,7 @@ impl MeshBuilder {
         Ok(Mesh {
             buffer: vbuf,
             slice,
+            image: self.image.clone(),
             blend_mode: None,
             debug_id: DebugId::get(ctx),
         })
@@ -445,6 +454,7 @@ impl t::VertexConstructor<t::StrokeVertex, Vertex> for VertexBuilder {
 pub struct Mesh {
     buffer: gfx::handle::Buffer<gfx_device_gl::Resources, Vertex>,
     slice: gfx::Slice<gfx_device_gl::Resources>,
+    image: Option<Image>,
     blend_mode: Option<BlendMode>,
     debug_id: DebugId,
 }
@@ -542,6 +552,11 @@ impl Mesh {
         mb.build(ctx)
     }
 
+    /// Add a texture for the `Mesh` to be drawn with.
+    pub fn set_texture(&mut self, image: Image) {
+        self.image = Some(image);
+    }
+
     /// Create a new `Mesh` from a raw list of triangle points.
     pub fn from_triangles<P>(ctx: &mut Context, triangles: &[P], color: Color) -> GameResult<Mesh>
     where
@@ -573,6 +588,7 @@ impl Mesh {
         Mesh {
             buffer: vbuf,
             slice,
+            image: None,
             blend_mode: None,
             debug_id: DebugId::get(ctx),
         }
@@ -590,7 +606,11 @@ impl Drawable for Mesh {
         gfx.update_instance_properties(param)?;
 
         gfx.data.vbuf = self.buffer.clone();
-        let texture = gfx.white_image.texture.clone();
+        let texture = self
+            .image
+            .as_ref()
+            .map(|img| img.texture.clone())
+            .unwrap_or_else(|| gfx.white_image.texture.clone());
 
         let typed_thingy = gfx.backend_spec.raw_to_typed_shader_resource(texture);
         gfx.data.tex.0 = typed_thingy;

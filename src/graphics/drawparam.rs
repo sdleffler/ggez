@@ -12,7 +12,7 @@ type Vec3 = na::Vector3<f32>;
 /// ```rust,ignore
 /// graphics::draw_ex(ctx, drawable, DrawParam{ dest: my_dest, .. Default::default()} )
 /// ```
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DrawParam {
     /// a portion of the drawable to clip, as a fraction of the whole image.
     /// Defaults to the whole image (1.0) if omitted.
@@ -178,7 +178,7 @@ where
 
 /// A `DrawParam` that has been crunched down to a single matrix.
 /// Useful for doing matrix-based coordinate transformations, I hope.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DrawTransform {
     /// The transform matrix for the DrawParams
     pub matrix: Matrix4,
