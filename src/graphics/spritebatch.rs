@@ -151,6 +151,25 @@ impl SpriteBatch {
     pub fn set_filter(&mut self, mode: FilterMode) {
         self.image.set_filter(mode);
     }
+
+    /// Get a `DrawParam` for a given sprite index.
+    pub fn get(&self, handle: SpriteIdx) -> GameResult<DrawParam> {
+        if handle.0 < self.sprites.len() {
+            Ok(self.sprites[handle.0])
+        } else {
+            Err(error::GameError::RenderError(String::from(
+                "Provided index is out of bounds.",
+            )))
+        }
+    }
+
+    /// Iterate over all sprites' `DrawParam`s in the SpriteBatch.
+    pub fn iter(&self) -> impl Iterator<Item = (SpriteIdx, DrawParam)> + '_ {
+        self.sprites
+            .iter()
+            .enumerate()
+            .map(|(i, &param)| (SpriteIdx(i), param))
+    }
 }
 
 impl graphics::Drawable for SpriteBatch {
